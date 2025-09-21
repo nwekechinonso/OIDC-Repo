@@ -1,0 +1,39 @@
+name: Deploy IAM Role to AWS
+
+on:
+  push:
+    branches:
+      - main  # Trigger this workflow on push to 'main' branch
+
+jobs:
+  deploy-iam-role:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      # Step 2: Set up AWS CLI and configure credentials
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 3: Create the IAM role using AWS CLI with the JSON policies
+      - name: Deploy IAM Role
+        run: |
+          # Read the trust policy and permissions policy from JSON files
+          TRUST_POLICY=$(cat iam/role-trust-policy.json)
+          PERMISSIONS_POLICY=$(cat iam/role-permissions-policy.json)
+          
+          # Create the IAM role with the trust policy (OIDC)
+          aws iam create-role --role-name github-actions-role --assume-role-policy-document "$TRUST_POLICY"
+          
+          # Attach the permissions policy to the role
+          aws iam put-role-policy --role-name github-actions-role --policy-name github-actions-permissions --policy-document "$PERMISSIONS_POLICY"
+          
+          # Output the ARN of the created role for use in other workflows
+          echo "Role ARN: $(aws iam get-role --role-name github-actions-role --query 'Role.Arn' --output text)"
