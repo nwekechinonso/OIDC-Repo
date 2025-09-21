@@ -4,12 +4,14 @@
     {
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::aws:policy/AWSGitHubActions"
+        "Federated": "arn:aws:iam::143867066003:oidc-provider/token.actions.githubusercontent.com"
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
-          "sts:ExternalId": "nwekechinonso"
+          "sts:ExternalId": "github-actions-external-id",
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:nwekechinonso/OIDC-Repo:ref:refs/heads/main"
         }
       }
     }
